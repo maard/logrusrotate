@@ -82,7 +82,7 @@ func testWithFormat(t *testing.T, format string) {
 	f, log, remover := setup()
 	defer remover()
 
-	lr, err := New(log, f.Name(), 5*Second, 0, format)
+	lr, err := New(log, f.Name(), 2*Second, 0, format)
 	if err != nil {
 		t.Fatalf("error creating logrusrotate instance %s", err)
 	}
@@ -107,7 +107,7 @@ func testWithFormat(t *testing.T, format string) {
 	expectLinks(t, 3, f.Name())
 
 	fmt.Println("sleeping till next rotation kicks in...")
-	time.Sleep(6 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	expectLinks(t, 4, f.Name())
 }

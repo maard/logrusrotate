@@ -175,9 +175,11 @@ func (l *Logrotate) rotate() {
 
 // force rotation
 func (l *Logrotate) Rotate() (err error) {
+	l.ticker.Stop()
 	if l.verbose {
 		l.log.Info("forced log rotation")
 	}
 	err = l.rotateLog(time.UnixMicro(0))
+	l.ticker.Reset(time.Duration(l.interval) * time.Second)
 	return
 }
