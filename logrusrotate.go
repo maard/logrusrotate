@@ -103,6 +103,7 @@ func (l *Logrotate) getSuffix(t time.Time) (result string) {
 }
 
 func (l *Logrotate) Start() (err error) {
+	os.Remove(l.basePath) // remove existing link
 	if l.f, err = os.OpenFile(l.basePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644); err == nil {
 		l.log.SetOutput(l.f)
 
