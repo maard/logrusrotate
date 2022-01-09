@@ -110,6 +110,15 @@ func testWithFormat(t *testing.T, format string) {
 	time.Sleep(3 * time.Second)
 
 	expectLinks(t, 4, f.Name())
+
+	// expect 1 more round of rotation
+	time.Sleep(2 * time.Second)
+
+	expectLinks(t, 5, f.Name())
+
+	lr.Stop()
+
+	expectLinks(t, 5, f.Name())
 }
 
 func TestTimedFormat(t *testing.T) {

@@ -126,6 +126,11 @@ func (l *Logrotate) Stop() {
 	l.active = false
 }
 
+// returns a channel which can be written to on app shutdown
+func (l *Logrotate) AppDone() chan<- int {
+	return l.appDoneCh
+}
+
 func (l *Logrotate) SetVerbose(v bool) {
 	l.verbose = v
 }
@@ -155,6 +160,7 @@ func (l *Logrotate) rotate() {
 	for {
 		select {
 		case <-l.appDoneCh:
+			l.ticker.Stop()
 			return
 		case t := <-l.ticker.C:
 			if l.verbose {
