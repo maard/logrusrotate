@@ -5,7 +5,6 @@ package logrusrotate
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -104,7 +103,7 @@ func (l *Logrotate) getSuffix(t time.Time) (result string) {
 
 func (l *Logrotate) Start() (err error) {
 	os.Remove(l.basePath) // remove existing link
-	if l.f, err = os.OpenFile(l.basePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644); err == nil {
+	if l.f, err = os.Create(l.basePath); err == nil {
 		l.log.SetOutput(l.f)
 
 		// we immediately hardlink 'base.log' to 'base.log.<suffix>'; rotate() does the same
@@ -142,12 +141,12 @@ func (l *Logrotate) rotateLog(t time.Time) error {
 
 	pathWithSuffix := l.basePath + "." + l.getSuffix(t)
 
-	newF, err := os.OpenFile(pathWithSuffix, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	newF, err := os.Create(pathWithSuffix)
 	if err != nil {
 		return fmt.Errorf("log rotation error, cannot create new file: %s", err)
 	}
 
-	log.SetOutput(newF)
+	l.log.SetOutput(newF)
 	l.f.Close()
 	l.f = newF
 	os.Remove(l.basePath)
@@ -156,6 +155,10 @@ func (l *Logrotate) rotateLog(t time.Time) error {
 }
 
 func (l *Logrotate) rotate() {
+	var err error
+	// defer func() {
+	// 	fmt.Fprintf(os.Stderr, "rotate goroutine exiting, err=%s", err)
+	// }()
 	l.ticker = time.NewTicker(time.Duration(l.interval) * time.Second)
 	for {
 		select {
@@ -166,14 +169,14 @@ func (l *Logrotate) rotate() {
 			if l.verbose {
 				l.log.Info("scheduled log rotation")
 			}
-			if err := l.rotateLog(t); err != nil {
+			if err = l.rotateLog(t); err != nil {
 				return
 			}
 		case t := <-l.forceRotateCh:
 			if l.verbose {
 				l.log.Info("forced log rotation")
 			}
-			if err := l.rotateLog(t); err != nil {
+			if err = l.rotateLog(t); err != nil {
 				return
 			}
 		}
